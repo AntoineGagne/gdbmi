@@ -26,6 +26,7 @@ import Text.Parsec.Combinator
     , optionMaybe
     , between
     , sepBy1
+    , sepBy
     , notFollowedBy
     )
 import Text.Parsec.Text
@@ -95,7 +96,7 @@ result = do
 
 value :: Parser Types.Value
 value 
-    = try (Types.Tuple <$> between (char '[') (char ']') (sepBy1 result (char ',')))
+    = try (Types.Tuple <$> between (char '{') (char '}') (sepBy result (char ',')))
    <|> try (Types.VList <$> list)
    <|> (Types.Const <$> cstring)
 
