@@ -1,0 +1,50 @@
+name:                gdbmi
+version:             0.1.0.0
+github:              "AntoineGagne/gdbmi"
+license:             BSD3
+author:              "Antoine Gagné"
+maintainer:          "example@example.com"
+copyright:           "2018 Antoine Gagné"
+
+extra-source-files:
+- README.rst
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description: Please see the README on Github at <https://github.com/AntoineGagne/gdbmi#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- parsec >= 3.1.13.0
+- lens >= 4.16
+- text >= 1.2.3.0
+
+library:
+  source-dirs: src
+
+executables:
+  gdbmi-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - gdbmi
+
+tests:
+  gdbmi-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - gdbmi

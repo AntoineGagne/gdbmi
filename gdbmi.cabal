@@ -1,0 +1,71 @@
+-- This file has been generated from package.yaml by hpack version 0.27.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 190b720588c3be786fc894e780cfbe1cbaf9118dfc96298bc33eb14acaa52175
+
+name:           gdbmi
+version:        0.1.0.0
+description:    Please see the README on Github at <https://github.com/AntoineGagne/gdbmi#readme>
+homepage:       https://github.com/AntoineGagne/gdbmi#readme
+bug-reports:    https://github.com/AntoineGagne/gdbmi/issues
+author:         Antoine Gagné
+maintainer:     example@example.com
+copyright:      2018 Antoine Gagné
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
+
+extra-source-files:
+    README.rst
+
+source-repository head
+  type: git
+  location: https://github.com/AntoineGagne/gdbmi
+
+library
+  exposed-modules:
+      Lib
+      Parser.Types
+  other-modules:
+      Paths_gdbmi
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+    , lens >=4.16
+    , parsec >=3.1.13.0
+    , text >=1.2.3.0
+  default-language: Haskell2010
+
+executable gdbmi-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_gdbmi
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , gdbmi
+    , lens >=4.16
+    , parsec >=3.1.13.0
+    , text >=1.2.3.0
+  default-language: Haskell2010
+
+test-suite gdbmi-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_gdbmi
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , gdbmi
+    , lens >=4.16
+    , parsec >=3.1.13.0
+    , text >=1.2.3.0
+  default-language: Haskell2010
