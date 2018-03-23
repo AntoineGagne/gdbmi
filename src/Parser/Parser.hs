@@ -67,12 +67,20 @@ asyncRecord
 nl = choice [string "\r", string "\r\n"]
 
 asyncOutput :: Parser Types.AsyncOutput
-asyncOutput = Types.AsyncOutput <$> asyncClass <*> many result
+asyncOutput = Types.AsyncOutput <$> asyncClass <*> many (char ',' >> result)
 
 asyncClass :: Parser Types.AsyncClass
 asyncClass 
     = try (string "stopped" >> pure Types.Stopped) 
-   <|> (many1 anyChar >> pure Types.Others)
+   <|> try (string "thread-group-added" >> pure Types.ThreadGroupAdded)
+   <|> try (string "thread-group-started" >> pure Types.ThreadGroupStarted)
+   <|> try (string "thread-created" >> pure Types.ThreadCreated)
+   <|> try (string "running" >> pure Types.AsyncClassRunning)
+   <|> try (string "thread-group-exited" >> pure Types.ThreadGroupExited)
+   <|> try (string "thread-exited" >> pure Types.ThreadExited)
+   <|> try (string "breakpoint-modified" >> pure Types.BreakpointModified)
+   <|> try (string "library-loaded" >> pure Types.LibraryLoaded)
+   <|> pure Types.Others
 
 streamRecord :: Parser Types.StreamRecord
 streamRecord 

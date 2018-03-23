@@ -38,6 +38,14 @@ type Token = Integer
 
 data AsyncClass
     = Stopped
+    | ThreadGroupAdded
+    | ThreadGroupStarted
+    | ThreadCreated
+    | AsyncClassRunning
+    | ThreadExited
+    | ThreadGroupExited
+    | BreakpointModified
+    | LibraryLoaded
     | Others
     deriving (Show)
 
