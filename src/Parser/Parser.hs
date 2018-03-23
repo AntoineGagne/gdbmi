@@ -8,6 +8,8 @@ import Control.Applicative.Combinators
     ( (<|>)
     , many
     )
+import Text.Parsec
+    ( try )
 import Text.Parsec.Char
     ( digit
     , string
@@ -49,17 +51,15 @@ resultRecord = do
     pure $ Types.ResultRecord token' resultClass' results
 
 outOfBandRecord :: Parser Types.OutOfBandRecord
-outOfBandRecord = choice
-    [ Types.OutOfBandAsyncRecord <$> asyncRecord
-    , Types.OutOfBandStreamRecord <$> streamRecord
-    ]
+outOfBandRecord 
+    = try (Types.OutOfBandAsyncRecord <$> asyncRecord)
+   <|> (Types.OutOfBandStreamRecord <$> streamRecord)
 
 asyncRecord :: Parser Types.AsyncRecord
-asyncRecord = choice
-    [ Types.ExecAsyncOutput <$> maybeToken '*' <*> asyncOutput <* nl
-    , Types.StatusAsyncOutput <$> maybeToken '+' <*> asyncOutput <* nl
-    , Types.NotifyAsyncOutput <$> maybeToken '=' <*> asyncOutput <* nl
-    ]
+asyncRecord 
+    = try (Types.ExecAsyncOutput <$> maybeToken '*' <*> asyncOutput <* nl)
+   <|> try (Types.StatusAsyncOutput <$> maybeToken '+' <*> asyncOutput <* nl)
+   <|> (Types.NotifyAsyncOutput <$> maybeToken '=' <*> asyncOutput <* nl)
   where
       maybeToken separator = optionMaybe token <* char separator
 
@@ -69,40 +69,35 @@ asyncOutput :: Parser Types.AsyncOutput
 asyncOutput = Types.AsyncOutput <$> asyncClass <*> many result
 
 asyncClass :: Parser Types.AsyncClass
-asyncClass = choice
-    [ string "stopped" >> pure Types.Stopped
-    , many1 anyChar >> pure Types.Others
-    ]
+asyncClass 
+    = try (string "stopped" >> pure Types.Stopped) 
+   <|> (many1 anyChar >> pure Types.Others)
 
 streamRecord :: Parser Types.StreamRecord
-streamRecord = choice
-    [ char '~' >> Types.ConsoleStreamOutput <$> cstring
-    , char '@' >> Types.TargetStreamOutput <$> cstring
-    , char '&' >> Types.LogStreamOutput <$> cstring
-    ]
+streamRecord 
+    = try (char '~' >> Types.ConsoleStreamOutput <$> cstring)
+   <|> try (char '@' >> Types.TargetStreamOutput <$> cstring)
+   <|> (char '&' >> Types.LogStreamOutput <$> cstring)
 
 resultClass :: Parser Types.ResultClass
-resultClass = choice
-    [ string "done" >> pure Types.Done
-    , string "running" >> pure Types.Running
-    , string "connected" >> pure Types.Connected
-    , string "error" >> pure Types.Error
-    , string "exit" >> pure Types.Exit
-    ]
+resultClass 
+    = try (string "done" >> pure Types.Done)
+   <|> try (string "running" >> pure Types.Running)
+   <|> try (string "connected" >> pure Types.Connected)
+   <|> try (string "error" >> pure Types.Error)
+   <|> (string "exit" >> pure Types.Exit)
 
 result :: Parser Types.Result
 result = do
-    variable <- many1 $ letter <|> digit <|> oneOf "_-"
+    variable <- many1 $ choice [letter, digit, oneOf "_-"]
     char '='
-    value' <- value
     Types.Result (T.pack variable) <$> value
 
 value :: Parser Types.Value
-value = choice
-    [ Types.Tuple <$> between (char '[') (char ']') (sepBy1 result (char ','))
-    , Types.VList <$> list
-    , Types.Const <$> cstring
-    ]
+value 
+    = try (Types.Tuple <$> between (char '[') (char ']') (sepBy1 result (char ',')))
+   <|> try (Types.VList <$> list)
+   <|> (Types.Const <$> cstring)
 
 cstring :: Parser T.Text
 cstring = T.concat <$> between (char '"') (char '"') (many characters)
@@ -120,7 +115,7 @@ nonEscapedCharacters :: Parser Char
 nonEscapedCharacters = noneOf "\\\"\0\n\r\v\t\b\f"
 
 list :: Parser Types.List
-list = choice [emptyList, resultsList, valuesList]
+list = try resultsList <|> try valuesList <|> emptyList
   where
       resultsList = Types.ResultList <$> listOf result
       valuesList = Types.ValueList <$> listOf value
