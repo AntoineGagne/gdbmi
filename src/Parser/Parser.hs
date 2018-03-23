@@ -38,6 +38,13 @@ resultClass = choice
     , string "exit" >> pure Types.Exit
     ]
 
+streamRecord :: Parser Types.StreamRecord
+streamRecord = choice
+    [ char '~' >> Types.ConsoleStreamOutput <$> cstring
+    , char '@' >> Types.TargetStreamOutput <$> cstring
+    , char '&' >> Types.LogStreamOutput <$> cstring
+    ]
+
 result :: Parser Types.Result
 result = do
     variable <- many1 $ letter <|> digit <|> oneOf "_-"
@@ -49,8 +56,11 @@ value :: Parser Types.Value
 value = choice
     [ Types.Tuple <$> between (char '[') (char ']') (sepBy1 result (char ','))
     , Types.VList <$> list
-    , Types.Const <$> (T.pack <$> between (char '"') (char '"') (many anyChar))
+    , Types.Const <$> cstring
     ]
+
+cstring :: Parser T.Text
+cstring = T.pack <$> between (char '"') (char '"') (many anyChar)
 
 list :: Parser Types.List
 list = choice [emptyList, resultsList, valuesList]
