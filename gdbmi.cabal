@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 865c9b1c31ab6842678fbdb2ea2668a559e129437aa87765d19d55ed2acb44f0
+-- hash: b0d0aa41a6ff81479912bb6e79f3d13c9a816593c30df6b94ec2784ca6722a8f
 
 name:           gdbmi
 version:        0.1.0.0
@@ -10,7 +10,7 @@ description:    Please see the README on Github at <https://github.com/AntoineGa
 homepage:       https://github.com/AntoineGagne/gdbmi#readme
 bug-reports:    https://github.com/AntoineGagne/gdbmi/issues
 author:         Antoine Gagné
-maintainer:     example@example.com
+maintainer:     antoine.gagne.2@ulaval.ca
 copyright:      2018 Antoine Gagné
 license:        BSD3
 license-file:   LICENSE
