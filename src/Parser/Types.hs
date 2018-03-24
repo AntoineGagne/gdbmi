@@ -46,7 +46,6 @@ data AsyncClass
     | ThreadGroupExited
     | BreakpointModified
     | LibraryLoaded
-    | Others
     deriving (Show)
 
 data Result = Result

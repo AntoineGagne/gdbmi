@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b0d0aa41a6ff81479912bb6e79f3d13c9a816593c30df6b94ec2784ca6722a8f
+-- hash: 9511bcdddb0e9bf2f8e840ecf4df2a096223a0f81f058047e99de9185c599e1f
 
 name:           gdbmi
 version:        0.1.0.0
@@ -28,6 +28,7 @@ library
   exposed-modules:
       Lib
       Parser.Parser
+      Parser.Printer
       Parser.Types
   other-modules:
       Paths_gdbmi
@@ -47,7 +48,7 @@ executable gdbmi-exe
       Paths_gdbmi
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
   build-depends:
       base >=4.7 && <5
     , gdbmi
@@ -61,13 +62,16 @@ test-suite gdbmi-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Parser.ParserSpec
       Paths_gdbmi
   hs-source-dirs:
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      QuickCheck >=2.10.1
+    , base >=4.7 && <5
     , gdbmi
+    , hspec >=2.4.8
     , lens >=4.16
     , parsec >=3.1.13.0
     , parser-combinators >=0.4.0

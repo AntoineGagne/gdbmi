@@ -36,6 +36,7 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -Wall
     dependencies:
     - gdbmi
 
@@ -49,3 +50,5 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - gdbmi
+    - hspec >= 2.4.8
+    - QuickCheck >= 2.10.1

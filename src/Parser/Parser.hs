@@ -17,8 +17,6 @@ import Text.Parsec.Char
     , letter
     , oneOf
     , noneOf
-    , anyChar
-    , endOfLine
     )
 import Text.Parsec.Combinator
     ( many1
@@ -27,7 +25,6 @@ import Text.Parsec.Combinator
     , between
     , sepBy1
     , sepBy
-    , notFollowedBy
     )
 import Text.Parsec.Text
     ( Parser )
@@ -46,7 +43,7 @@ output = Types.Output
 resultRecord :: Parser Types.ResultRecord
 resultRecord = do
     token' <- optionMaybe token
-    char '^'
+    _ <- char '^'
     resultClass' <- resultClass
     results <- many (char ',' >> result) <* newline'
     pure $ Types.ResultRecord token' resultClass' results
@@ -81,7 +78,6 @@ asyncClass
    <|> try (string "thread-exited" >> pure Types.ThreadExited)
    <|> try (string "breakpoint-modified" >> pure Types.BreakpointModified)
    <|> try (string "library-loaded" >> pure Types.LibraryLoaded)
-   <|> pure Types.Others
 
 streamRecord :: Parser Types.StreamRecord
 streamRecord 
@@ -100,7 +96,7 @@ resultClass
 result :: Parser Types.Result
 result = do
     variable <- many1 $ choice [letter, digit, oneOf "_-"]
-    char '='
+    _ <- char '='
     Types.Result (T.pack variable) <$> value
 
 value :: Parser Types.Value
