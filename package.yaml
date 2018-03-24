@@ -52,3 +52,4 @@ tests:
     - gdbmi
     - hspec >= 2.4.8
     - QuickCheck >= 2.10.1
+    - quickcheck-instances >= 0.3.18

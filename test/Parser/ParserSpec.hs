@@ -2,9 +2,12 @@
 
 module Parser.ParserSpec where
 
+import Data.Text
+
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.QuickCheck
+import Test.QuickCheck.Instances.Text
 import Text.Parsec
     ( parse )
 
@@ -17,6 +20,7 @@ spec :: Spec
 spec = do
     tokenSpec
     resultClassSpec
+    streamRecordSpec
 
 tokenSpec :: Spec
 tokenSpec =
@@ -29,6 +33,18 @@ prop_validToken (Positive n)
     = case parse Parser.token "" (showToken (Just n)) of
           Left _ -> False
           Right token' -> token' == n
+
+streamRecordSpec :: Spec
+streamRecordSpec =
+    describe "streamRecord" $
+        context "given valid stream record input" $
+            prop "returns the same stream record as the input" prop_validStreamRecord
+
+prop_validStreamRecord :: StreamRecord -> Bool
+prop_validStreamRecord streamRecord'
+    = case parse Parser.streamRecord "" (showStreamRecord streamRecord') of
+          Left _ -> False
+          Right streamRecord'' -> streamRecord'' == streamRecord'
 
 resultClassSpec :: Spec
 resultClassSpec =
@@ -51,3 +67,12 @@ instance Arbitrary ResultClass where
             2 -> Connected
             3 -> Error
             4 -> Exit
+
+instance Arbitrary StreamRecord where
+    arbitrary = do
+        n <- choose (0, 2) :: Gen Integer
+        text <- arbitrary :: Gen Text
+        pure $ case n of
+            0 -> ConsoleStreamOutput text
+            1 -> TargetStreamOutput text
+            2 -> LogStreamOutput text
