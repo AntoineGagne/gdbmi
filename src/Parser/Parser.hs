@@ -41,14 +41,14 @@ output = Types.Output
     <$> many outOfBandRecord
     <*> optionMaybe resultRecord
     <* string "(gdb)"
-    <* nl
+    <* newline'
 
 resultRecord :: Parser Types.ResultRecord
 resultRecord = do
     token' <- optionMaybe token
     char '^'
     resultClass' <- resultClass
-    results <- many (char ',' >> result) <* nl
+    results <- many (char ',' >> result) <* newline'
     pure $ Types.ResultRecord token' resultClass' results
 
 outOfBandRecord :: Parser Types.OutOfBandRecord
@@ -58,14 +58,14 @@ outOfBandRecord
 
 asyncRecord :: Parser Types.AsyncRecord
 asyncRecord 
-    = try (Types.ExecAsyncOutput <$> maybeToken '*' <*> asyncOutput <* nl)
-   <|> try (Types.StatusAsyncOutput <$> maybeToken '+' <*> asyncOutput <* nl)
-   <|> (Types.NotifyAsyncOutput <$> maybeToken '=' <*> asyncOutput <* nl)
+    = try (Types.ExecAsyncOutput <$> maybeToken '*' <*> asyncOutput <* newline')
+   <|> try (Types.StatusAsyncOutput <$> maybeToken '+' <*> asyncOutput <* newline')
+   <|> (Types.NotifyAsyncOutput <$> maybeToken '=' <*> asyncOutput <* newline')
   where
       maybeToken separator = optionMaybe token <* char separator
 
-nl :: Parser String
-nl = try (string "\r\n") <|> try (string "\n") <|> string "\r"
+newline' :: Parser String
+newline' = try (string "\r\n") <|> try (string "\n") <|> string "\r"
 
 asyncOutput :: Parser Types.AsyncOutput
 asyncOutput = Types.AsyncOutput <$> asyncClass <*> many (char ',' >> result)
