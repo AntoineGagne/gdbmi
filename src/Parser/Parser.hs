@@ -18,7 +18,7 @@ import Text.Parsec.Char
     , oneOf
     , noneOf
     , anyChar
-    , crlf
+    , endOfLine
     )
 import Text.Parsec.Combinator
     ( many1
@@ -64,7 +64,8 @@ asyncRecord
   where
       maybeToken separator = optionMaybe token <* char separator
 
-nl = choice [string "\r", string "\r\n"]
+nl :: Parser String
+nl = try (string "\r\n") <|> try (string "\n") <|> string "\r"
 
 asyncOutput :: Parser Types.AsyncOutput
 asyncOutput = Types.AsyncOutput <$> asyncClass <*> many (char ',' >> result)
