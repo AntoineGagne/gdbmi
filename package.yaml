@@ -3,7 +3,7 @@ version:             0.1.0.0
 github:              "AntoineGagne/gdbmi"
 license:             BSD3
 author:              "Antoine Gagné"
-maintainer:          "example@example.com"
+maintainer:          "antoine.gagne.2@ulaval.ca"
 copyright:           "2018 Antoine Gagné"
 
 extra-source-files:
