@@ -30,7 +30,6 @@ import Text.Megaparsec.Char
     , oneOf
     , noneOf
     , satisfy
-    , notChar
     )
 
 import qualified Data.Text as T
