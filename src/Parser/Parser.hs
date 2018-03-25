@@ -127,7 +127,7 @@ nonEscapedCharacters
     = T.singleton <$> noneOf ['\\', '"', '\0', '\n', '\r', '\v', '\t', '\b', '\f']
 
 list :: Parser Types.List
-list = try resultsList <|> try valuesList <|> emptyList
+list = try emptyList <|> try resultsList <|> valuesList
   where
       resultsList = Types.ResultList <$> listOf result
       valuesList = Types.ValueList <$> listOf value

@@ -6,7 +6,8 @@ import Data.Text
 
 import Test.Hspec
 import Test.Hspec.QuickCheck
-import Test.QuickCheck
+import Test.QuickCheck hiding
+    ( Result )
 import Test.QuickCheck.Instances.Text
 import Text.Megaparsec
     ( parse )
@@ -21,15 +22,18 @@ spec = do
     tokenSpec
     resultClassSpec
     streamRecordSpec
+    listSpec
+    resultSpec
+    valueSpec
 
 tokenSpec :: Spec
 tokenSpec =
     describe "token" $
         context "given valid token input" $
-            prop "returns the same token as the input" prop_validToken
+            prop "returns the same token as the input" prop_idempotenceOfTokenParsing
 
-prop_validToken :: Positive Integer -> Bool
-prop_validToken (Positive n) 
+prop_idempotenceOfTokenParsing :: Positive Integer -> Bool
+prop_idempotenceOfTokenParsing (Positive n) 
     = case parse Parser.token "" (showToken (Just n)) of
           Left _ -> False
           Right token' -> token' == n
@@ -38,10 +42,10 @@ streamRecordSpec :: Spec
 streamRecordSpec =
     describe "streamRecord" $
         context "given valid stream record input" $
-            prop "returns the same stream record as the input" prop_validStreamRecord
+            prop "returns the same stream record as the input" prop_idempotenceOfStreamRecordParsing
 
-prop_validStreamRecord :: StreamRecord -> Bool
-prop_validStreamRecord streamRecord'
+prop_idempotenceOfStreamRecordParsing :: StreamRecord -> Bool
+prop_idempotenceOfStreamRecordParsing streamRecord'
     = case parse Parser.streamRecord "" (showStreamRecord streamRecord') of
           Left _ -> False
           Right streamRecord'' -> streamRecord'' == streamRecord'
@@ -50,13 +54,69 @@ resultClassSpec :: Spec
 resultClassSpec =
     describe "resultClass" $
         context "given valid result class input" $
-            prop "returns the same result class as the input" prop_validResultClass
+            prop "returns the same result class as the input" prop_idempotenceOfResultClassParsing
 
-prop_validResultClass :: ResultClass -> Bool
-prop_validResultClass resultClass'
+prop_idempotenceOfResultClassParsing :: ResultClass -> Bool
+prop_idempotenceOfResultClassParsing resultClass'
     = case parse Parser.resultClass "" (showResultClass resultClass') of
           Left _ -> False
           Right resultClass'' -> resultClass'' == resultClass'
+
+listSpec :: Spec
+listSpec =
+    describe "list" $
+        context "given valid list input" $
+            prop "returns the same list as the input" prop_idempotenceOfListParsing
+
+prop_idempotenceOfListParsing :: List -> Bool
+prop_idempotenceOfListParsing list'
+    = case parse Parser.list "" (showList' list') of
+          Left _ -> False
+          Right list'' -> list'' == list'
+
+resultSpec :: Spec
+resultSpec =
+    describe "result" $
+        context "given valid result input" $
+            prop "returns the same result as the input" prop_idempotenceOfResultParsing
+
+prop_idempotenceOfResultParsing :: Result -> Bool
+prop_idempotenceOfResultParsing result'
+    = case parse Parser.result "" (showResult result') of
+          Left _ -> False
+          Right result'' -> result'' == result'
+
+valueSpec :: Spec
+valueSpec =
+    describe "value" $
+        context "given valid value input" $
+            prop "returns the same value as the input" prop_idempotenceOfValueParsing
+
+prop_idempotenceOfValueParsing :: Value -> Bool
+prop_idempotenceOfValueParsing value'
+    = case parse Parser.value "" (showValue value') of
+          Left _ -> False
+          Right value'' -> value'' == value'
+
+instance Arbitrary List where
+    arbitrary = sized $ \n -> frequency
+        [ (n, pure EmptyList)
+        , (1, ValueList <$> vectorOf (n + 1) (arbitrary :: Gen Value))
+        , (1, ResultList <$> vectorOf (n + 1) (arbitrary :: Gen Result))
+        ]
+
+instance Arbitrary Result where
+    arbitrary = do
+        variable <- getPossibleVariableName <$> (arbitrary :: Gen PossibleVariableName)
+        value <- arbitrary :: Gen Value
+        pure $ Result variable value
+
+instance Arbitrary Value where
+    arbitrary = sized $ \n -> frequency
+        [ (n, Const <$> (getPossibleText <$> (arbitrary :: Gen PossibleText)))
+        , (1, Tuple <$> vectorOf n (arbitrary :: Gen Result))
+        , (1, VList <$> (arbitrary :: Gen List))
+        ]
 
 instance Arbitrary ResultClass where
     arbitrary = do
@@ -77,6 +137,18 @@ instance Arbitrary StreamRecord where
             1 -> TargetStreamOutput text
             2 -> LogStreamOutput text
 
+newtype PossibleVariableName = PossibleVariableName
+    { getPossibleVariableName :: Text }
+
+instance Arbitrary PossibleVariableName where
+    arbitrary = PossibleVariableName
+        <$> oneof [ pure "id"
+                  , pure "test-id"
+                  , pure "test_id"
+                  , pure "test-id_1"
+                  , pure "1test_id_2"
+                  ]
+
 newtype PossibleText = PossibleText
     { getPossibleText :: Text }
 
@@ -93,5 +165,3 @@ instance Arbitrary PossibleText where
                       , pure "Un test avec des caractères unicodes. \
                              \Peut-être que ça ne marchera pas."
                       ]
-
-
