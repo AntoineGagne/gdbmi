@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 514f1d9cddef266b0cd5897b6ef773266edfdba7702d4d41e29f81f8eced3a83
+-- hash: b0234ab52f3d65c0a2cfc5e90129b001f72a1a793566ff815f4f8c9ee59887b7
 
 name:           gdbmi
 version:        0.1.0.0
@@ -26,6 +26,7 @@ source-repository head
 
 library
   exposed-modules:
+      Command.Types
       Parser.Parser
       Parser.Printer
       Parser.Types
