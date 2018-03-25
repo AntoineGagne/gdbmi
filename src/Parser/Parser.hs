@@ -30,7 +30,7 @@ import Text.Megaparsec.Char
     , oneOf
     , noneOf
     , satisfy
-    , printChar
+    , notChar
     )
 
 import qualified Data.Text as T
@@ -115,16 +115,17 @@ cstring :: Parser T.Text
 cstring = T.concat <$> between (char '"') (char '"') (many characters)
 
 characters :: Parser T.Text
-characters = (T.singleton <$> nonEscapedCharacters) <|> escapedCharacters
+characters = escapedCharacters <|> nonEscapedCharacters 
 
 escapedCharacters :: Parser T.Text
 escapedCharacters = do
     first <- char '\\'
     second <- oneOf ['\\', '"', '0', 'n', 'r', 'v', 't', 'b', 'f']
-    pure $ T.cons first (T.singleton second)
+    pure $ T.pack [first, second]
 
-nonEscapedCharacters :: Parser Char
-nonEscapedCharacters = noneOf ['\\', '"', '\0', '\n', '\r', '\v', '\t', '\b', '\f']
+nonEscapedCharacters :: Parser T.Text
+nonEscapedCharacters 
+    = T.singleton <$> noneOf ['\\', '"', '\0', '\n', '\r', '\v', '\t', '\b', '\f']
 
 list :: Parser Types.List
 list = try resultsList <|> try valuesList <|> emptyList

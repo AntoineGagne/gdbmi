@@ -71,8 +71,27 @@ instance Arbitrary ResultClass where
 instance Arbitrary StreamRecord where
     arbitrary = do
         n <- choose (0, 2) :: Gen Integer
-        text <- arbitrary :: Gen Text
+        text <- getPossibleText <$> (arbitrary :: Gen PossibleText)
         pure $ case n of
             0 -> ConsoleStreamOutput text
             1 -> TargetStreamOutput text
             2 -> LogStreamOutput text
+
+newtype PossibleText = PossibleText
+    { getPossibleText :: Text }
+
+instance Arbitrary PossibleText where
+    arbitrary = PossibleText 
+            <$> oneof [ pure Data.Text.empty
+                      , pure "Test"
+                      , pure "\\\"Test\\\""
+                      , pure "\\nTest\\\""
+                      , pure "\\rTest\\v"
+                      , pure "\\v\\tTest\\b\\f"
+                      , pure "\\\\test"
+                      , pure "~&@Test"
+                      , pure "Un test avec des caractères unicodes. \
+                             \Peut-être que ça ne marchera pas."
+                      ]
+
+
