@@ -8,7 +8,7 @@ import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.QuickCheck
 import Test.QuickCheck.Instances.Text
-import Text.Parsec
+import Text.Megaparsec
     ( parse )
 
 import Parser.Types

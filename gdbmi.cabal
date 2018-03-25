@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0f67b3b9fbfea992fe673870cda2cdb126ef1fc52a2de059d25bf161f03fd20b
+-- hash: 562e816751ca526588853bf111ea12e26293bf6d58eed227c6ffa65af5499ac1
 
 name:           gdbmi
 version:        0.1.0.0
@@ -37,6 +37,7 @@ library
   build-depends:
       base >=4.7 && <5
     , lens >=4.16
+    , megaparsec >=6.4.1
     , parsec >=3.1.13.0
     , parser-combinators >=0.4.0
     , text >=1.2.3.0
@@ -53,6 +54,7 @@ executable gdbmi-exe
       base >=4.7 && <5
     , gdbmi
     , lens >=4.16
+    , megaparsec >=6.4.1
     , parsec >=3.1.13.0
     , parser-combinators >=0.4.0
     , text >=1.2.3.0
@@ -73,6 +75,7 @@ test-suite gdbmi-test
     , gdbmi
     , hspec >=2.4.8
     , lens >=4.16
+    , megaparsec >=6.4.1
     , parsec >=3.1.13.0
     , parser-combinators >=0.4.0
     , quickcheck-instances >=0.3.18

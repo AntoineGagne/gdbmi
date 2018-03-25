@@ -24,6 +24,7 @@ dependencies:
 - parser-combinators >= 0.4.0
 - lens >= 4.16
 - text >= 1.2.3.0
+- megaparsec >= 6.4.1
 
 library:
   source-dirs: src

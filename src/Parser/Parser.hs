@@ -1,4 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Parser.Parser where
 
@@ -7,42 +9,46 @@ import Control.Applicative
 import Control.Applicative.Combinators
     ( (<|>)
     , many
-    )
-import Text.Parsec
-    ( try )
-import Text.Parsec.Char
-    ( digit
-    , string
-    , char
-    , letter
-    , oneOf
-    , noneOf
-    )
-import Text.Parsec.Combinator
-    ( many1
+    , some
     , choice
-    , optionMaybe
+    , optional
     , between
     , sepBy1
     , sepBy
     )
-import Text.Parsec.Text
-    ( Parser )
+import Data.Void
+    ( Void )
+import Text.Megaparsec
+    ( try
+    , Parsec
+    )
+import Text.Megaparsec.Char
+    ( digitChar
+    , string
+    , char
+    , letterChar
+    , oneOf
+    , noneOf
+    , satisfy
+    , printChar
+    )
 
 import qualified Data.Text as T
 
 import qualified Parser.Types as Types
 
+type Parser = Parsec Void T.Text
+
 output :: Parser Types.Output
 output = Types.Output
     <$> many outOfBandRecord
-    <*> optionMaybe resultRecord
+    <*> optional resultRecord
     <* string "(gdb)"
     <* newline'
 
 resultRecord :: Parser Types.ResultRecord
 resultRecord = do
-    token' <- optionMaybe token
+    token' <- optional token
     _ <- char '^'
     resultClass' <- resultClass
     results <- many (char ',' >> result) <* newline'
@@ -59,9 +65,9 @@ asyncRecord
    <|> try (Types.StatusAsyncOutput <$> maybeToken '+' <*> asyncOutput <* newline')
    <|> (Types.NotifyAsyncOutput <$> maybeToken '=' <*> asyncOutput <* newline')
   where
-      maybeToken separator = optionMaybe token <* char separator
+      maybeToken separator = optional token <* char separator
 
-newline' :: Parser String
+newline' :: Parser T.Text
 newline' = try (string "\r\n") <|> try (string "\n") <|> string "\r"
 
 asyncOutput :: Parser Types.AsyncOutput
@@ -95,7 +101,7 @@ resultClass
 
 result :: Parser Types.Result
 result = do
-    variable <- many1 $ choice [letter, digit, oneOf "_-"]
+    variable <- some $ choice [letterChar, digitChar, satisfy (\x -> x == '_' || x == '-')]
     _ <- char '='
     Types.Result (T.pack variable) <$> value
 
@@ -114,11 +120,11 @@ characters = (T.singleton <$> nonEscapedCharacters) <|> escapedCharacters
 escapedCharacters :: Parser T.Text
 escapedCharacters = do
     first <- char '\\'
-    second <- oneOf "\\\"0nrvtbf"
+    second <- oneOf ['\\', '"', '0', 'n', 'r', 'v', 't', 'b', 'f']
     pure $ T.cons first (T.singleton second)
 
 nonEscapedCharacters :: Parser Char
-nonEscapedCharacters = noneOf "\\\"\0\n\r\v\t\b\f"
+nonEscapedCharacters = noneOf ['\\', '"', '\0', '\n', '\r', '\v', '\t', '\b', '\f']
 
 list :: Parser Types.List
 list = try resultsList <|> try valuesList <|> emptyList
@@ -130,5 +136,5 @@ list = try resultsList <|> try valuesList <|> emptyList
 
 token :: Parser Types.Token
 token = do
-    digits <- many1 digit
-    pure $ read digits
+    digitChars <- some digitChar
+    pure $ read digitChars
