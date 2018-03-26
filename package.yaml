@@ -25,6 +25,7 @@ dependencies:
 - lens >= 4.16
 - text >= 1.2.3.0
 - megaparsec >= 6.4.1
+- process >= 1.6.1.0
 
 library:
   source-dirs: src

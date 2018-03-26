@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b0234ab52f3d65c0a2cfc5e90129b001f72a1a793566ff815f4f8c9ee59887b7
+-- hash: 66985b8df7e53eb5e1f1c0b4b6ed18b397d8bcac78654c56518008e61cf64f68
 
 name:           gdbmi
 version:        0.1.0.0
@@ -40,6 +40,7 @@ library
     , megaparsec >=6.4.1
     , parsec >=3.1.13.0
     , parser-combinators >=0.4.0
+    , process >=1.6.1.0
     , text >=1.2.3.0
   default-language: Haskell2010
 
@@ -57,6 +58,7 @@ executable gdbmi-exe
     , megaparsec >=6.4.1
     , parsec >=3.1.13.0
     , parser-combinators >=0.4.0
+    , process >=1.6.1.0
     , text >=1.2.3.0
   default-language: Haskell2010
 
@@ -78,6 +80,7 @@ test-suite gdbmi-test
     , megaparsec >=6.4.1
     , parsec >=3.1.13.0
     , parser-combinators >=0.4.0
+    , process >=1.6.1.0
     , quickcheck-instances >=0.3.18
     , text >=1.2.3.0
   default-language: Haskell2010

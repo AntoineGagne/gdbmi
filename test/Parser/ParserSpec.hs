@@ -230,8 +230,20 @@ instance Arbitrary List where
     arbitrary = sized $ \n -> frequency
         [ (n, pure EmptyList)
         , (1, ValueList <$> vectorOf (n + 1) (arbitrary :: Gen Value))
-        , (1, ResultList <$> vectorOf (n + 1) (arbitrary :: Gen Result))
+        , (1, ResultList <$> generateResults (n + 1))
         ]
+
+generateResults :: Int -> Gen [Result]
+generateResults 0 = pure []
+generateResults n = 
+  (:) 
+    <$> ( Result 
+        <$> (getPossibleVariableName
+            <$> (arbitrary :: Gen PossibleVariableName)
+            )
+        <*> (Const . getPossibleText <$> (arbitrary :: Gen PossibleText))
+        ) 
+    <*> generateResults (n - 1)
 
 instance Arbitrary Result where
     arbitrary = do
@@ -242,7 +254,7 @@ instance Arbitrary Result where
 instance Arbitrary Value where
     arbitrary = sized $ \n -> frequency
         [ (n, Const <$> (getPossibleText <$> (arbitrary :: Gen PossibleText)))
-        , (1, Tuple <$> vectorOf n (arbitrary :: Gen Result))
+        , (1, Tuple <$> generateResults n)
         , (1, VList <$> (arbitrary :: Gen List))
         ]
 
