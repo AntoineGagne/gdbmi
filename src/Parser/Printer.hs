@@ -6,30 +6,25 @@ module Parser.Printer where
 import Control.Lens
     ( (^.) )
 
+import Data.Monoid
+    ( (<>) )
 import qualified Data.Text as T
 
 import Parser.Types
 
 showOutput :: Output -> T.Text
 showOutput output' 
-    = T.append 
-        (T.append 
-            (T.concat $ map showOutOfBandRecord (output'^.outOfBandRecord))
-            (maybe "" showResultRecord (output'^.resultRecord))
-        )
-        "(gdb)\n"
+    = T.concat (map showOutOfBandRecord (output'^.outOfBandRecord))
+    <> maybe "" showResultRecord (output'^.resultRecord)
+    <> "(gdb)\n"
 
 showResultRecord :: ResultRecord -> T.Text
-showResultRecord resultRecord' = 
-    T.append 
-        (T.append 
-            (T.append (T.snoc (showToken (resultRecord'^.token)) '^') 
-                      (showResultClass (resultRecord'^.resultClass))
-            )
-            $ T.concat
-            $ map (T.cons ',' . showResult) (resultRecord'^.results)
-        )
-        "\n"
+showResultRecord resultRecord' 
+    = showToken (resultRecord'^.token)
+    <> "^"
+    <> showResultClass (resultRecord'^.resultClass)
+    <> T.concat (map ((<>) "," . showResult) (resultRecord'^.results))
+    <> "\n"
 
 showOutOfBandRecord :: OutOfBandRecord -> T.Text
 showOutOfBandRecord = \case
@@ -38,26 +33,20 @@ showOutOfBandRecord = \case
 
 showAsyncRecord :: AsyncRecord -> T.Text
 showAsyncRecord = \case
-    ExecAsyncOutput token' asyncOutput' -> f '*' token' asyncOutput'
-    StatusAsyncOutput token' asyncOutput' -> f '+' token' asyncOutput'
-    NotifyAsyncOutput token' asyncOutput' -> f '=' token' asyncOutput'
+    ExecAsyncOutput token' asyncOutput' -> f "*" token' asyncOutput'
+    StatusAsyncOutput token' asyncOutput' -> f "+" token' asyncOutput'
+    NotifyAsyncOutput token' asyncOutput' -> f "=" token' asyncOutput'
   where
       f c token' asyncOutput'
-          = T.snoc 
-            (T.append
-               (T.snoc (showToken token') c)
-               (showAsyncOutput asyncOutput')
-            )
-            '\n'
+          = showToken token' <> c <> showAsyncOutput asyncOutput' <> "\n"
 
 showToken :: Maybe Token -> T.Text
 showToken = maybe "" (T.pack . show)
 
 showAsyncOutput :: AsyncOutput -> T.Text
 showAsyncOutput asyncOutput
-    = T.append (showAsyncClass (asyncOutput^.asyncClass))
-    $ T.concat
-    $ map (T.cons ',' . showResult) (asyncOutput^.asyncResults)
+    = showAsyncClass (asyncOutput^.asyncClass) 
+    <> T.concat (map ((<>) "," . showResult) (asyncOutput^.asyncResults))
 
 showAsyncClass :: AsyncClass -> T.Text
 showAsyncClass = \case
@@ -73,8 +62,9 @@ showAsyncClass = \case
 
 showResult :: Result -> T.Text
 showResult result 
-    = T.append (T.snoc (result^.variable) '=')
-    $ showValue (result^.value)
+    = result^.variable
+    <> "="
+    <> showValue (result^.value)
 
 showValue :: Value -> T.Text
 showValue = \case
@@ -107,6 +97,6 @@ showResultClass = \case
 
 showStreamRecord :: StreamRecord -> T.Text
 showStreamRecord = \case
-    ConsoleStreamOutput text -> T.cons '~' $ surround '"' '"' text
-    TargetStreamOutput text -> T.cons '@' $ surround '"' '"' text
-    LogStreamOutput text -> T.cons '&' $ surround '"' '"' text
+    ConsoleStreamOutput text -> "~" <> surround '"' '"' text
+    TargetStreamOutput text -> "@" <> surround '"' '"' text
+    LogStreamOutput text -> "&" <> surround '"' '"' text
