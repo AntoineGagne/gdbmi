@@ -49,6 +49,13 @@ makeLenses ''GdbCliCommand
 makeLenses ''Operation
 makeLenses ''Option
 
+breakAfter :: Maybe Token -> Integer -> Integer -> Command
+breakAfter token number count 
+    = MiCommand
+        token
+        (Operation ("-break-after " <> T.pack (show number) <> " " <> T.pack (show count)))
+        [] []
+
 showCommand :: Command -> T.Text
 showCommand = \case
     CliCommand token command' -> showToken token <> " " <> showGdbCliCommand command'
@@ -56,7 +63,7 @@ showCommand = \case
         -> showToken token <> "-" 
                            <> operation'^.operation
                            <> T.concat (map ((<>) " " . showOption) options')
-                           <> " --"
+                           <> if null parameters' then "" else " --"
                            <> T.concat (map ((<>) " " . showParameter) parameters')
   where
     showGdbCliCommand :: GdbCliCommand -> T.Text
