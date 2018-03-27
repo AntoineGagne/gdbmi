@@ -21,6 +21,7 @@ import Data.Void
 import Text.Megaparsec
     ( try
     , Parsec
+    , eof
     )
 import Text.Megaparsec.Char
     ( digitChar
@@ -44,6 +45,7 @@ output = Types.Output
     <*> optional resultRecord
     <* string "(gdb)"
     <* newline'
+    <* eof
 
 resultRecord :: Parser Types.ResultRecord
 resultRecord = do
