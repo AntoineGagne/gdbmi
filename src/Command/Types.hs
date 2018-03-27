@@ -4,6 +4,8 @@
 
 module Command.Types
     ( Command
+    , token
+    , breakAfter
     ) where
 
 import Data.Monoid
@@ -20,24 +22,30 @@ import Parser.Printer
 import Parser.Types
     ( Token )
 
-data Command 
-    = CliCommand (Maybe Token) GdbCliCommand
-    | MiCommand (Maybe Token) Operation [Option] [Parameter]
+data Command = Command
+    { _token :: Maybe Token
+    , _command :: GdbCommand
+    } deriving (Show)
+
+data GdbCommand
+    = CliCommand GdbCliCommand
+    | MiCommand Operation [Option] [Parameter]
     deriving (Show)
 
 newtype GdbCliCommand
     = GdbCliCommand
-    { _command :: T.Text }
+    { _cliCommand :: T.Text }
     deriving (Show)
 
-newtype Operation
+data Operation
     = Operation
-    { _operation :: T.Text }
-    deriving (Show)
+    { _operation :: T.Text
+    , _hasDashes :: Bool
+    } deriving (Show)
 
 data Option = Option 
-    { _mandatory :: Parameter
-    , _others :: [Parameter]
+    { _optionName :: Parameter
+    , _arguments :: [Parameter]
     } deriving (Show)
 
 data Parameter
@@ -45,34 +53,34 @@ data Parameter
     | RawParameter T.Text
     deriving (Show)
 
+makeLenses ''Command
 makeLenses ''GdbCliCommand
 makeLenses ''Operation
 makeLenses ''Option
 
-breakAfter :: Maybe Token -> Integer -> Integer -> Command
-breakAfter token number count 
-    = MiCommand
-        token
-        (Operation ("-break-after " <> T.pack (show number) <> " " <> T.pack (show count)))
+breakAfter :: Integer -> Integer -> Command
+breakAfter number count 
+    = Command Nothing 
+    $ MiCommand
+        (Operation ("-break-after " <> T.pack (show number) <> " " <> T.pack (show count)) False)
         [] []
 
-showCommand :: Command -> T.Text
-showCommand = \case
-    CliCommand token command' -> showToken token <> " " <> showGdbCliCommand command'
-    MiCommand token operation' options' parameters'
-        -> showToken token <> "-" 
-                           <> operation'^.operation
-                           <> T.concat (map ((<>) " " . showOption) options')
-                           <> if null parameters' then "" else " --"
-                           <> T.concat (map ((<>) " " . showParameter) parameters')
+showGdbCommand :: GdbCommand -> T.Text
+showGdbCommand = \case
+    CliCommand command' -> showGdbCliCommand command'
+    MiCommand operation' options' parameters'
+        -> "-" <> operation'^.operation
+               <> T.concat (map ((<>) " " . showOption) options')
+               <> if operation'^.hasDashes then " --" else ""
+               <> T.concat (map ((<>) " " . showParameter) parameters')
   where
     showGdbCliCommand :: GdbCliCommand -> T.Text
-    showGdbCliCommand command' = command'^.command <> "\n"
+    showGdbCliCommand command' = command'^.cliCommand <> "\n"
     showOption :: Option -> T.Text
     showOption option' 
         = "-" 
-        <> showParameter (option'^.mandatory)
-        <> T.concat (map ((<>) " " . showParameter) (option'^.others))
+        <> showParameter (option'^.optionName)
+        <> T.concat (map ((<>) " " . showParameter) (option'^.arguments))
     showParameter :: Parameter -> T.Text
     showParameter = \case
         QuotedParameter parameter' -> "\"" <> parameter' <> "\""
