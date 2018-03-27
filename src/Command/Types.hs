@@ -58,17 +58,15 @@ showCommand = \case
                            <> T.concat (map ((<>) " " . showOption) options')
                            <> " --"
                            <> T.concat (map ((<>) " " . showParameter) parameters')
-
-showGdbCliCommand :: GdbCliCommand -> T.Text
-showGdbCliCommand command' = command'^.command <> "\n"
-
-showOption :: Option -> T.Text
-showOption option' 
-    = "-" 
-    <> showParameter (option'^.mandatory)
-    <> T.concat (map ((<>) " " . showParameter) (option'^.others))
-
-showParameter :: Parameter -> T.Text
-showParameter = \case
-    QuotedParameter parameter' -> "\"" <> parameter' <> "\""
-    RawParameter parameter' -> parameter'
+  where
+    showGdbCliCommand :: GdbCliCommand -> T.Text
+    showGdbCliCommand command' = command'^.command <> "\n"
+    showOption :: Option -> T.Text
+    showOption option' 
+        = "-" 
+        <> showParameter (option'^.mandatory)
+        <> T.concat (map ((<>) " " . showParameter) (option'^.others))
+    showParameter :: Parameter -> T.Text
+    showParameter = \case
+        QuotedParameter parameter' -> "\"" <> parameter' <> "\""
+        RawParameter parameter' -> parameter'
