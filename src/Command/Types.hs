@@ -6,6 +6,7 @@ module Command.Types
     ( Command
     , token
     , breakAfter
+    , showCommand
     ) where
 
 import Data.Monoid
@@ -62,8 +63,12 @@ breakAfter :: Integer -> Integer -> Command
 breakAfter number count 
     = Command Nothing 
     $ MiCommand
-        (Operation ("-break-after " <> T.pack (show number) <> " " <> T.pack (show count)) False)
-        [] []
+        (Operation "break-after" False)
+        [] (map (RawParameter . T.pack . show) [number, count])
+
+showCommand :: Command -> T.Text
+showCommand command' = showToken (command'^.token) 
+                    <> showGdbCommand (command'^.command)
 
 showGdbCommand :: GdbCommand -> T.Text
 showGdbCommand = \case
